@@ -3,23 +3,17 @@
 
 #include <string>
 #include <vector>
+#include "position.h"
 using namespace std;
-
-struct Position{
-    Position(char f, int r) : file(f), rank(r){}
-    char file;
-    char rank;
-};
 
 class Piece {
 public:
-    Piece(char t = ' ', char c = 'x', char f = '-', char r = '-') : type(t), color(c), position(f,r){}
+    Piece(char t = ' ', char c = 'x') : type(t), color(c){}
     char getType();
-    void setPosition();
+    void updateHistory(Position p);
 private:
     char type;
     char color;
-    Position position;
     vector<Position> history;
 };
 

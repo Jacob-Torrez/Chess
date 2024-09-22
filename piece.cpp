@@ -11,3 +11,7 @@ char Piece::getType(){
 
     return temp;
 }
+
+void Piece::updateHistory(Position p){
+    history.push_back(p);
+}

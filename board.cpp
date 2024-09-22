@@ -10,3 +10,11 @@ void Board::printBoard(){
         cout << " |" << endl;
     }
 }
+
+bool Board::validMove(Position i, Position f){
+    
+}
+
+void Board::movePiece(Position i, Position f){
+    
+}

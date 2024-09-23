@@ -2,7 +2,6 @@
 #define PIECE_H
 
 #include <string>
-#include <vector>
 #include "position.h"
 using namespace std;
 
@@ -10,11 +9,12 @@ class Piece {
 public:
     Piece(char t = ' ', char c = 'x') : type(t), color(c){}
     char getType();
-    void updateHistory(Position p);
+    char getColor();
+    void updateHasMoved();
 private:
     char type;
     char color;
-    vector<Position> history;
+    bool hasMoved = false;
 };
 
 #endif

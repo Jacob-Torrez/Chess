@@ -2,10 +2,10 @@
 #define POSITION_H
 
 struct Position{
-    Position(int f, int r) : file(f), rank(r){}
+    Position(int r, int c) : row(r), col(c){}
     
-    int file;
-    int rank;
+    int row;
+    int col;
 };
 
 #endif

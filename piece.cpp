@@ -1,17 +1,13 @@
 #include "piece.h"
 
 char Piece::getType(){
-    char temp;
-    if (color == 'W'){
-        temp = type;
-    }
-    else{
-        temp = tolower(type);
-    }
-
-    return temp;
+    return type;
 }
 
-void Piece::updateHistory(Position p){
-    history.push_back(p);
+char Piece::getColor(){
+    return color;
+}
+
+void Piece::updateHasMoved(){
+    hasMoved = true;
 }

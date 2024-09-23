@@ -9,7 +9,8 @@ class Board
 {
 public:
     void printBoard();
-    bool validMove(Position i, Position f);
+    bool isValidMove(Position i, Position f);
+    bool isClearPath(Position i, Position f);
     void movePiece(Position i, Position f);
 private:
     Piece board[8][8] = 

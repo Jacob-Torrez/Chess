@@ -84,7 +84,7 @@ bool Board::isClearPath(Position i, Position f){
     }
 }
 
-bool Board::isValidMove(Position i, Position f){
+bool Board::isValidMove(Position i, Position f){ //add input validation to ensure in range index
     bool validMove = true;
 
     if (i.row == f.row && i.col == f.col){ //checks if piece moves
@@ -96,17 +96,41 @@ bool Board::isValidMove(Position i, Position f){
         }
         else{
             switch(board[i.row][f.row].getType()){
-                case 'P': //pawn
-                
+                case 'P': //pawn need to check for +-1 rows or +-2 rows && en Passant
+                    break;
+                    
                 case 'R': //rook
+                    if ((i.row == f.row) == (i.col == f.col)){ 
+                        validMove = false;
+                    }
+                    else if (!isClearPath(i, f)){
+                        validMove = false;
+                    }
+                    break;
 
                 case 'N': //knight
+                    if (!(((abs(i.row - f.row) == 1) && (abs(i.col - f.col) == 2)) || ((abs(i.row - f.row) == 2) && (abs(i.col - f.col) == 1)))){
+                        validMove = false;
+                    }
+                    break;
                 
                 case 'Q': //queen
+                    if ((i.row == f.row) == (i.col == f.col)){
+                        validMove = false;
+                    }
+                    else if (abs(i.row - f.row) != abs(i.col - f.col)){
+                        validMove = false;
+                    }
+                    break;
 
                 case 'B': //bishop
+                    if (abs(i.row - f.row) != abs(i.col - f.col)){
+                        validMove = false;
+                    }
+                    break;
 
                 case 'K': //king
+                    break;
             }
         }
     }

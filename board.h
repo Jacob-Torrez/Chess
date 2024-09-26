@@ -9,10 +9,13 @@ class Board
 {
 public:
     void printBoard();
-    bool isValidMove(Position i, Position f);
     bool isClearPath(Position i, Position f);
+    bool isKingCheck(Position k);
+    bool isValidMove(Position i, Position f);
     void movePiece(Position i, Position f);
 private:
+    Position blackKing = {0, 4};
+    Position whiteKing = {7, 4};
     Piece board[8][8] = 
     {
     {Piece('R', 'B'), Piece('N', 'B'), Piece('B', 'B'), Piece('Q', 'B'), 

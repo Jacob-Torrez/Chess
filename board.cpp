@@ -84,6 +84,12 @@ bool Board::isClearPath(Position i, Position f){
     }
 }
 
+bool Board::isKingCheck(Position k){
+    bool check = false;
+    
+    
+} 
+
 bool Board::isValidMove(Position i, Position f){ //add input validation to ensure in range index
     bool validMove = true;
 
@@ -96,9 +102,29 @@ bool Board::isValidMove(Position i, Position f){ //add input validation to ensur
         }
         else{
             switch(board[i.row][f.row].getType()){
-                case 'P': //pawn need to check for +-1 rows or +-2 rows && en Passant
+                case 'P': //pawn
+                    int color;
+                    if (board[i.row][i.col].getColor() == 'W'){
+                        color = -1;
+                    }
+                    else{
+                        color = 1;
+                    }
+
+                    if (((f.row - i.row) == color * 1) && (abs(i.col - f.col) == 1) && (board[i.row][i.col - 1].getEnPassant() || board[i.row][i.col + 1].getEnPassant())){
+                        // en Passant
+                    }
+                    else if (!board[i.row][i.col].getHasMoved() && (f.row - i.row == color * 2) && (f.col - i.col == 0)){
+                        // +2
+                    }
+                    else if ((f.row - i.row == color * 1) && (f.col - i.col == 0)){
+                        // +1
+                    }
+                    else{
+                        validMove = false;
+                    }
                     break;
-                    
+
                 case 'R': //rook
                     if ((i.row == f.row) == (i.col == f.col)){ 
                         validMove = false;

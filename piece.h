@@ -10,12 +10,11 @@ public:
     Piece(char t = ' ', char c = 'x') : type(t), color(c){}
     char getType();
     char getColor();
-    void setCastle();
+    void updateCastle();
     bool getEnPassant();
     bool getCastle();
     bool getHasMoved();
-    void enableEnPassant();
-    void disableEnPassant();
+    void updateEnPassant(bool b);
     void updateHasMoved();
 private:
     char type;

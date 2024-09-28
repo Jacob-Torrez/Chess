@@ -87,7 +87,6 @@ bool Board::isClearPath(Position i, Position f){
 bool Board::isKingCheck(Position k){
     bool check = false;
     
-    
 } 
 
 bool Board::isValidMove(Position i, Position f){ //add input validation to ensure in range index

@@ -8,16 +8,12 @@ char Piece::getColor(){
     return color;
 }
 
-void Piece::setCastle(){
+void Piece::updateCastle(){
     castle = false;
 }
 
-void Piece::enableEnPassant(){
-    enPassant = true;
-}
-
-void Piece::disableEnPassant(){
-    enPassant = false;
+void Piece::updateEnPassant(bool b){
+    enPassant = b;
 }
 
 void Piece::updateHasMoved(){

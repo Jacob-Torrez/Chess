@@ -8,4 +8,13 @@ struct Position{
     int col;
 };
 
+bool operator==(Position a, Position b){
+    bool equal = false;
+    if (a.row == b.row && a.col == b.col){
+        equal = true;
+    }
+
+    return equal;
+}
+
 #endif

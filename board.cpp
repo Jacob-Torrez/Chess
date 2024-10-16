@@ -85,8 +85,130 @@ bool Board::isClearPath(Position i, Position f){
 }
 
 bool Board::isKingCheck(Position k){
-    bool check = false;
-    
+    char kingColor;
+    char oppColor;
+
+    if (k == blackKing){ //black king
+        kingColor = 'B';
+        oppColor = 'W';
+    }
+    else { //white king
+        kingColor = 'W';
+        oppColor = 'B';
+    }
+
+    if (kingColor == 'B'){ //white pawn check
+        if ((k.row + 1) < 8 && (k.col - 1) > -1){
+            if (board[k.row + 1][k.col - 1].getType() == 'P' && board[k.row + 1][k.col - 1].getColor() == 'W'){ //pawn left
+                return true;
+            }
+        }
+        if ((k.row + 1) < 8 && (k.col + 1) < 8){
+            if (board[k.row + 1][k.col + 1].getType() == 'P' && board[k.row + 1][k.col - 1].getColor() == 'W'){ //pawn right
+                return true;
+            }
+        }
+    }
+    else { //black pawn check
+        if ((k.row - 1) > -1 && (k.col - 1) > -1){
+            if (board[k.row - 1][k.col - 1].getType() == 'P' && board[k.row - 1][k.col - 1].getColor() == 'W'){ //pawn left
+                return true;
+            }
+        }
+        if ((k.row - 1) > -1 && (k.col + 1) < 8){
+            if (board[k.row - 1][k.col + 1].getType() == 'P' && board[k.row - 1][k.col - 1].getColor() == 'W'){ //pawn right
+                return true;
+            }
+        }
+    }
+
+    if (1){ // horse check
+    }
+
+    bool dirClear; // var to stop loop when detecting friendly color
+
+    dirClear = false;
+    for (int j = k.col + 1; j < 7 && !dirClear; j++){ // right
+        if ((board[k.row][j].getColor() == oppColor) && (board[k.row][j].getType() == 'R' || board[k.row][j].getType() == 'Q')){
+            return true;
+        }
+        else if (board[k.row][j].getColor() == kingColor){
+            dirClear = true;
+        }
+    }
+
+    dirClear = false;
+    for (int j = k.col - 1; j > 0 && !dirClear; j--){ // left
+        if ((board[k.row][j].getColor() == oppColor) && (board[k.row][j].getType() == 'R' || board[k.row][j].getType() == 'Q')){
+            return true;
+        }
+        else if (board[k.row][j].getColor() == kingColor){
+            dirClear = true;
+        }
+    }
+
+    dirClear = false;
+    for (int j = k.row + 1; j < 7 && !dirClear; j++){ //down
+        if ((board[j][k.col].getColor() == oppColor) && (board[j][k.col].getType() == 'R' || board[j][k.col].getType() == 'Q')){
+            return true;
+        }
+        else if (board[j][k.col].getColor() == kingColor){
+            dirClear = true;
+        }
+    }
+
+    dirClear = false;
+    for (int j = k.row - 1; j > 0 && !dirClear; j--){ //up
+        if ((board[j][k.col].getColor() == oppColor) && (board[j][k.col].getType() == 'R' || board[j][k.col].getType() == 'Q')){
+            return true;
+        }
+        else if (board[j][k.col].getColor() == kingColor){
+            dirClear = true;
+        }
+    }
+
+    dirClear = false;
+    for (int j = k.row + 1, i = k.col + 1; j < 7 && i < 7 && !dirClear; j++, i++){ //down-right
+        if ((board[j][i].getColor() == oppColor) && (board[j][i].getType() == 'B' || board[j][i].getType() == 'Q')){
+            return true;
+        }
+        else if (board[j][i].getColor() == kingColor){
+            dirClear = true;
+        }
+    }
+
+    dirClear = false;
+    for (int j = k.row + 1, i = k.col - 1; j < 7 && i > 0 && !dirClear; j++, i--){ //down-left
+        if ((board[j][i].getColor() == oppColor) && (board[j][i].getType() == 'B' || board[j][i].getType() == 'Q')){
+            return true;
+        }
+        else if (board[j][i].getColor() == kingColor){
+            dirClear = true;
+        }
+    }
+
+    dirClear = false;
+    for (int j = k.row - 1, i = k.col + 1; j > 0 && i < 7 && !dirClear; j--, i++){ //up-right
+        if ((board[j][i].getColor() == oppColor) && (board[j][i].getType() == 'B' || board[j][i].getType() == 'Q')){
+            return true;
+        }
+        else if (board[j][i].getColor() == kingColor){
+            dirClear = true;
+        }
+    }
+
+    dirClear = false;
+    for (int j = k.row - 1, i = k.col - 1; j > 0 && i > 0 && !dirClear; j--, i--){ //up-left
+        if ((board[j][i].getColor() == oppColor) && (board[j][i].getType() == 'B' || board[j][i].getType() == 'Q')){
+            return true;
+        }
+        else if (board[j][i].getColor() == kingColor){
+            dirClear = true;
+        }
+    }
+
+
+
 } 
 
 bool Board::isValidMove(Position i, Position f){ //add input validation to ensure in range index

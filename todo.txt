@@ -1,0 +1,5 @@
+TODO:
+1. Refactor Existing code to use inheritance and polymorphism
+2. Ensure existing code works properly 
+3. Implement player input
+4. Implement Chess Engine

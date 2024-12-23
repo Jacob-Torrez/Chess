@@ -18,7 +18,7 @@ public:
     virtual ~Piece() = default;
     bool getColor() {return color;}
     virtual PieceType getType() = 0;
-    virtual std::vector<Position> getPossibleMoves(Position i, Board& board) = 0;
+    virtual std::vector<Position> getPossibleMoves(const Position& i, const Board& board) = 0;
 private:
     bool color; // 1 is white, 0 is black
 };
@@ -27,7 +27,7 @@ class King : public Piece {
 public:
     King(bool c) : Piece(c) {}
     PieceType getType() override {return PieceType::King;}
-    std::vector<Position> getPossibleMoves(Position i, Board& board) override;
+    std::vector<Position> getPossibleMoves(const Position& i, const Board& board) override;
     void updateCastle() {castle = 0;}
     bool getCastle() {return castle;}
 private:
@@ -38,21 +38,21 @@ class Queen : public Piece {
 public:
     Queen(bool c) : Piece(c) {}
     PieceType getType() override {return PieceType::Queen;}
-    std::vector<Position> getPossibleMoves(Position i, Board& board) override;
+    std::vector<Position> getPossibleMoves (const Position& i, const Board& board) override;
 };
 
 class Bishop : public Piece {
 public:
     Bishop(bool c) : Piece(c) {}
     PieceType getType() override {return PieceType::Bishop;}
-    std::vector<Position> getPossibleMoves(Position i, Board& board) override;
+    std::vector<Position> getPossibleMoves(const Position& i, const Board& board) override;
 };
 
 class Rook : public Piece {
 public:
     Rook(bool c) : Piece(c) {}
     PieceType getType() override {return PieceType::Rook;}
-    std::vector<Position> getPossibleMoves(Position i, Board& board) override;
+    std::vector<Position> getPossibleMoves(const Position& i, const Board& board) override;
     void updateCastle() {castle = 0;}
     bool getCastle() {return castle;}
 private:
@@ -63,7 +63,7 @@ class Pawn : public Piece {
 public:
     Pawn(bool c) : Piece(c) {}
     PieceType getType() override {return PieceType::Pawn;}
-    std::vector<Position> getPossibleMoves(Position i, Board& board) override;
+    std::vector<Position> getPossibleMoves(const Position& i, const Board& board) override;
     void updateEnPassant() {enPassant = (enPassant) ? 0 : 1;}
     bool getEnPassant() {return enPassant;}
 private:
@@ -74,7 +74,9 @@ class Knight : public Piece {
 public:
     Knight(bool c) : Piece(c) {}
     PieceType getType() override {return PieceType::Knight;}
-    std::vector<Position> getPossibleMoves(Position i, Board& board) override;
+    std::vector<Position> getPossibleMoves(const Position& i, const Board& board) override;
 };
 
-extern char to_char(PieceType piece);
+extern char to_char(const PieceType& piece);
+
+extern bool moveFound(const vector<Position>& moves, const Position& move);

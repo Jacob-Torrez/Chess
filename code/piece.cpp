@@ -1,11 +1,11 @@
 #include "piece.h"
 #include "board.h"
 
-std::vector<Position> King::getPossibleMoves(Position i, Board& board){
+std::vector<Position> King::getPossibleMoves(const Position& i, const Board& board){
     std::vector<Position> moves;
     Position directions[] = {{0, 1}, {0, -1}, {1, 0}, {-1, 0}, {1, 1}, {1, -1}, {-1, 1}, {-1, -1}};
 
-    for (auto& dir : directions){
+    for (const auto& dir : directions){
         Position f = i + dir;
         if (f.row < MAX_HEIGHT && f.col < MAX_WIDTH && f.row >= MIN_HEIGHT && f.col >= MIN_WIDTH){
             if (!board[f] || board[i]->getColor() != board[f]->getColor()){
@@ -17,7 +17,7 @@ std::vector<Position> King::getPossibleMoves(Position i, Board& board){
     if (this->getCastle()){ // castle
         Position castles[] = {{0, 2}, {0, -2}};
     
-        for (auto& castle : castles){
+        for (const auto& castle : castles){
             Position f = i + castle;
             if (board.isPathClear(i, f)){
                 moves.push_back(f);
@@ -28,11 +28,11 @@ std::vector<Position> King::getPossibleMoves(Position i, Board& board){
     return moves;
 }   
 
-std::vector<Position> Knight::getPossibleMoves(Position i, Board& board){
+std::vector<Position> Knight::getPossibleMoves(const Position& i, const Board& board){
     std::vector<Position> moves;
     Position directions[] = {{1, 2}, {1, -2}, {-1, 2}, {-1, -2}, {2, 1}, {2, -1}, {-2, 1}, {-2, -1}};
 
-    for (auto& dir : directions){
+    for (const auto& dir : directions){
         Position f = i + dir;
         if (f.row < MAX_HEIGHT && f.col < MAX_WIDTH && f.row >= MIN_HEIGHT && f.col >= MIN_WIDTH){
             if (!board[f] || board[i]->getColor() != board[f]->getColor()){
@@ -44,7 +44,7 @@ std::vector<Position> Knight::getPossibleMoves(Position i, Board& board){
     return moves;
 }
 
-std::vector<Position> Pawn::getPossibleMoves(Position i, Board& board){
+std::vector<Position> Pawn::getPossibleMoves(const Position& i, const Board& board){
     std::vector<Position> moves;
     int direction = (this->getColor()) ? -1 : 1;
     Position directions[] = {{direction * 1, 0}, {direction * 1, 1}, {direction * 1, -1}};
@@ -85,11 +85,11 @@ std::vector<Position> Pawn::getPossibleMoves(Position i, Board& board){
     return moves;
 }
 
-std::vector<Position> Rook::getPossibleMoves(Position i, Board& board){
+std::vector<Position> Rook::getPossibleMoves(const Position& i, const Board& board){
     std::vector<Position> moves;
     Position directions[] = {{0, 1}, {0, -1}, {1, 0}, {-1, 0}};
 
-    for (auto& dir : directions){
+    for (const auto& dir : directions){
         Position f = i + dir;
         bool stop;
         do {
@@ -112,11 +112,11 @@ std::vector<Position> Rook::getPossibleMoves(Position i, Board& board){
     return moves;
 }
 
-std::vector<Position> Bishop::getPossibleMoves(Position i, Board& board){
+std::vector<Position> Bishop::getPossibleMoves(const Position& i, const Board& board){
     std::vector<Position> moves;
     Position directions[] = {{1, 1}, {-1, 1}, {1, -1}, {-1, -1}};
 
-    for (auto& dir : directions){
+    for (const auto& dir : directions){
         Position f = i + dir;
         bool stop;
         do {
@@ -139,11 +139,11 @@ std::vector<Position> Bishop::getPossibleMoves(Position i, Board& board){
     return moves;
 }
 
-std::vector<Position> Queen::getPossibleMoves(Position i, Board& board){
+std::vector<Position> Queen::getPossibleMoves(const Position& i, const Board& board){
     std::vector<Position> moves;
     Position directions[] = {{1, 1}, {-1, 1}, {1, -1}, {-1, -1}, {0, 1}, {0, -1}, {1, 0}, {-1, 0}};
 
-    for (auto& dir : directions){
+    for (const auto& dir : directions){
         Position f = i + dir;
         bool stop;
         do {
@@ -166,7 +166,7 @@ std::vector<Position> Queen::getPossibleMoves(Position i, Board& board){
     return moves;
 }
 
-char to_char(PieceType piece){ // function to convert PieceType enum to char for printBoard()
+char to_char(const PieceType& piece){ // function to convert PieceType enum to char for printBoard()
     switch (piece){
         case PieceType::Bishop:
         return 'B';
@@ -194,4 +194,14 @@ char to_char(PieceType piece){ // function to convert PieceType enum to char for
     }
 
     return 0;
+}
+
+bool moveFound(const vector<Position>& moves, const Position& move){
+    for (const auto& m : moves){
+        if (m == move){
+            return true;
+        }
+    }
+
+    return false;
 }

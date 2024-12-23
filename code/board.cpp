@@ -16,7 +16,7 @@ Board::~Board(){
     }
 }
 
-void Board::printBoard(){
+void Board::printBoard() const {
     for (int i = 0; i < MAX_HEIGHT; i++){
         std::cout << " +---+---+---+---+---+---+---+---+" << endl;
         for (int j = 0; j < MAX_WIDTH; j++){
@@ -59,3 +59,38 @@ bool Board::isPathClear(const Position& i, const Position& f) const {
     return true;
 }
 
+bool Board::isValidMove(const Position& i, const Position& f) const {
+    vector<Position> moves = (*this)[i]->getPossibleMoves(i, *this);
+
+    if (moveFound(moves, f)){
+        if (true){ // king in check?
+            if ((*this)[i]->getType() == PieceType::Pawn){ // pawn en passant checking
+        
+
+            }
+            else if ((*this)[i]->getType() == PieceType::King){ // king castling checking
+
+
+            }
+            else {
+
+
+            }
+        }
+    }
+
+    return false;
+}
+
+bool Board::kingCheck(const Position& king) const {
+    bool kingColor = (*this)[king]->getColor();
+    bool oppColor = !kingColor;
+
+    
+
+    return true;
+}
+
+void Board::movePiece(const Position& i, const Position& f){
+
+}

@@ -1,4 +1,6 @@
 /.vscode
 /main.exe
-/todo.txt
 /main.cpp
+/makefile
+/*.o
+/Chess.out

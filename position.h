@@ -1,20 +1,26 @@
-#ifndef POSITION_H
-#define POSITION_H
+#pragma once
 
 struct Position{
-    Position(int r, int c) : row(r), col(c){}
+    Position(int r = 0, int c = 0) : row(r), col(c){}
     
     int row;
     int col;
-};
 
-bool operator==(Position a, Position b){
-    bool equal = false;
-    if (a.row == b.row && a.col == b.col){
-        equal = true;
+    bool operator==(const Position& other) const {
+        return (row == other.row) && (col == other.col);
     }
 
-    return equal;
-}
+    bool operator!=(const Position& other) const {
+        return !(*this == other);
+    }
 
-#endif
+    Position operator+(const Position& other) const {
+        return Position(row + other.row, col + other.col);
+    }
+
+    Position& operator+=(const Position& other){
+        this->col += other.col;
+        this->row += other.row;
+        return *this;
+    }
+};

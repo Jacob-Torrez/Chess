@@ -1,33 +1,197 @@
 #include "piece.h"
+#include "board.h"
 
-char Piece::getType(){
-    return type;
+std::vector<Position> King::getPossibleMoves(Position i, Board& board){
+    std::vector<Position> moves;
+    Position directions[] = {{0, 1}, {0, -1}, {1, 0}, {-1, 0}, {1, 1}, {1, -1}, {-1, 1}, {-1, -1}};
+
+    for (auto& dir : directions){
+        Position f = i + dir;
+        if (f.row < MAX_HEIGHT && f.col < MAX_WIDTH && f.row >= MIN_HEIGHT && f.col >= MIN_WIDTH){
+            if (!board[f] || board[i]->getColor() != board[f]->getColor()){
+                moves.push_back(f);
+            }
+        }
+    }
+
+    if (this->getCastle()){ // castle
+        Position castles[] = {{0, 2}, {0, -2}};
+    
+        for (auto& castle : castles){
+            Position f = i + castle;
+            if (board.isPathClear(i, f)){
+                moves.push_back(f);
+            }
+        }
+    }
+
+    return moves;
+}   
+
+std::vector<Position> Knight::getPossibleMoves(Position i, Board& board){
+    std::vector<Position> moves;
+    Position directions[] = {{1, 2}, {1, -2}, {-1, 2}, {-1, -2}, {2, 1}, {2, -1}, {-2, 1}, {-2, -1}};
+
+    for (auto& dir : directions){
+        Position f = i + dir;
+        if (f.row < MAX_HEIGHT && f.col < MAX_WIDTH && f.row >= MIN_HEIGHT && f.col >= MIN_WIDTH){
+            if (!board[f] || board[i]->getColor() != board[f]->getColor()){
+                moves.push_back(f);
+            }
+        }
+    }
+
+    return moves;
 }
 
-char Piece::getColor(){
-    return color;
+std::vector<Position> Pawn::getPossibleMoves(Position i, Board& board){
+    std::vector<Position> moves;
+    int direction = (this->getColor()) ? -1 : 1;
+    Position directions[] = {{direction * 1, 0}, {direction * 1, 1}, {direction * 1, -1}};
+
+    for (int j = 0; j < 3; j++){
+        Position f = i + directions[j];
+        if (f.row < MAX_HEIGHT && f.col < MAX_WIDTH && f.row >= MIN_HEIGHT && f.col >= MIN_WIDTH){
+            switch (j){
+                case 0: // forward move
+                    if (!board[f]){
+                        moves.push_back(f);
+                    }
+                    break;
+
+                case 1:
+                    if (board[f] && (board[i]->getColor() != board[f]->getColor())){ // right diagonal capture
+                        moves.push_back(f);
+                    } 
+                    // right en passant
+                    else if (board[i + Position(0, 1)] && (board[i + Position(0, 1)]->getType() == PieceType::Pawn) && (board[i + Position(0, 1)]->getColor() != board[i]->getColor())){
+                        moves.push_back(f);
+                    }
+                    break;
+
+                case 2:
+                    if (board[f] && (board[i]->getColor() != board[f]->getColor())){ // left diagonal capture
+                        moves.push_back(f);
+                    }
+                    // left en passant
+                    else if (board[i + Position(0, -1)] && (board[i + Position(0, -1)]->getType() == PieceType::Pawn) && (board[i + Position(0, -1)]->getColor() != board[i]->getColor())){ 
+                        moves.push_back(f);
+                    }
+                    break;
+            }
+        }
+    }
+
+    return moves;
 }
 
-void Piece::updateCastle(){
-    castle = false;
+std::vector<Position> Rook::getPossibleMoves(Position i, Board& board){
+    std::vector<Position> moves;
+    Position directions[] = {{0, 1}, {0, -1}, {1, 0}, {-1, 0}};
+
+    for (auto& dir : directions){
+        Position f = i + dir;
+        bool stop;
+        do {
+            stop = true;
+            if (f.row < MAX_HEIGHT && f.col < MAX_WIDTH && f.row >= MIN_HEIGHT && f.col >= MIN_WIDTH){
+                if (!board[f]){
+                    moves.push_back(f);
+                    stop = false;
+                }
+                else if (board[i]->getColor() != board[f]->getColor()){
+                    moves.push_back(f);
+                }
+            }
+
+            f += dir;
+        } while (!stop);
+        
+    }
+
+    return moves;
 }
 
-void Piece::updateEnPassant(bool b){
-    enPassant = b;
+std::vector<Position> Bishop::getPossibleMoves(Position i, Board& board){
+    std::vector<Position> moves;
+    Position directions[] = {{1, 1}, {-1, 1}, {1, -1}, {-1, -1}};
+
+    for (auto& dir : directions){
+        Position f = i + dir;
+        bool stop;
+        do {
+            stop = true;
+            if (f.row < MAX_HEIGHT && f.col < MAX_WIDTH && f.row >= MIN_HEIGHT && f.col >= MIN_WIDTH){
+                if (!board[f]){
+                    moves.push_back(f);
+                    stop = false;
+                }
+                else if (board[i]->getColor() != board[f]->getColor()){
+                    moves.push_back(f);
+                }
+            }
+
+            f += dir;
+        } while (!stop);
+        
+    }
+
+    return moves;
 }
 
-void Piece::updateHasMoved(){
-    hasMoved = true;
+std::vector<Position> Queen::getPossibleMoves(Position i, Board& board){
+    std::vector<Position> moves;
+    Position directions[] = {{1, 1}, {-1, 1}, {1, -1}, {-1, -1}, {0, 1}, {0, -1}, {1, 0}, {-1, 0}};
+
+    for (auto& dir : directions){
+        Position f = i + dir;
+        bool stop;
+        do {
+            stop = true;
+            if (f.row < MAX_HEIGHT && f.col < MAX_WIDTH && f.row >= MIN_HEIGHT && f.col >= MIN_WIDTH){
+                if (!board[f]){
+                    moves.push_back(f);
+                    stop = false;
+                }
+                else if (board[i]->getColor() != board[f]->getColor()){
+                    moves.push_back(f);
+                }
+            }
+
+            f += dir;
+        } while (!stop);
+        
+    }
+
+    return moves;
 }
 
-bool Piece::getEnPassant(){
-    return enPassant;
-}
+char to_char(PieceType piece){ // function to convert PieceType enum to char for printBoard()
+    switch (piece){
+        case PieceType::Bishop:
+        return 'B';
+        break;
 
-bool Piece::getCastle(){
-    return castle;
-}
+        case PieceType::Rook:
+        return 'R';
+        break;
 
-bool Piece::getHasMoved(){
-    return hasMoved;
+        case PieceType::Queen:
+        return 'Q';
+        break;
+
+        case PieceType::King:
+        return 'K';
+        break;
+
+        case PieceType::Knight:
+        return 'N';
+        break;
+
+        case PieceType::Pawn:
+        return 'P';
+        break;
+    }
+
+    return 0;
 }

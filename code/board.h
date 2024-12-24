@@ -3,7 +3,6 @@
 #include "piece.h"
 #include "position.h"
 #include <iostream>
-using namespace std;
 
 class Board
 {
@@ -20,6 +19,8 @@ public:
     Piece*& operator[](const Position& p){return board[p.row][p.col];}
 
 private:
+    bool moveFound(const std::vector<Position>& moves, const Position& move);
+
     Position whiteKing;
     Position blackKing;
     Piece* board[8][8];

@@ -16,9 +16,19 @@ Board::~Board(){
     }
 }
 
+bool Board::moveFound(const std::vector<Position>& moves, const Position& move){
+    for (const auto& m : moves){
+        if (m == move){
+            return true;
+        }
+    }
+
+    return false;
+}
+
 void Board::printBoard() const {
     for (int i = 0; i < MAX_HEIGHT; i++){
-        std::cout << " +---+---+---+---+---+---+---+---+" << endl;
+        std::cout << " +---+---+---+---+---+---+---+---+" << std::endl;
         for (int j = 0; j < MAX_WIDTH; j++){
             if (board[i][j]){
                 if (board[i][j]->getColor() == Color::White){
@@ -32,10 +42,10 @@ void Board::printBoard() const {
                 std::cout << " | " << " ";
             }
         }
-        std::cout << " |" << endl;
+        std::cout << " |" << std::endl;
     }
 
-    std::cout << " +---+---+---+---+---+---+---+---+" << endl;
+    std::cout << " +---+---+---+---+---+---+---+---+" << std::endl;
 }
 
 bool Board::isPathClear(const Position& i, const Position& f) const {
@@ -60,7 +70,7 @@ bool Board::isPathClear(const Position& i, const Position& f) const {
 }
 
 bool Board::isValidMove(const Position& i, const Position& f) const {
-    vector<Position> moves = (*this)[i]->getPossibleMoves(i, *this);
+    std::vector<Position> moves = (*this)[i]->getPossibleMoves(i);
 
     if (moveFound(moves, f)){
         if (true){ // king in check?

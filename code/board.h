@@ -8,7 +8,9 @@ class Board
 {
 public:
     Board();
+    Board(const Board& other);
     ~Board();
+    
     void printBoard() const;
     bool isMovePathClear(const Position& i, const Position& f) const;
     bool isValidMove(const Position& i, const Position& f) const;
@@ -23,6 +25,7 @@ public:
     Position getWhiteKing() const {return whiteKing;}
     Position getBlackKing() const {return blackKing;}
 
+    Board& operator=(const Board& other);
     Piece* operator[](const Position& p) const {return board[p.row][p.col];}
     Piece*& operator[](const Position& p){return board[p.row][p.col];}
 

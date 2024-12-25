@@ -13,13 +13,17 @@ const int MIN_HEIGHT = 0;
 class Piece {
 public:
     Piece(bool c) : color(c) {}
+    Piece(const Piece& other) : color(other.color) {}
+    virtual Piece* clone() const = 0;
     virtual ~Piece() = default;
-    bool getColor() {return color;}
-    virtual PieceType getType() = 0;
-    virtual std::vector<Position> getPossibleMoves(const Position& i) = 0;
+
+    virtual bool getColor() const {return color;}
+    virtual PieceType getType() const = 0;
+
+    virtual std::vector<Position> getPossibleMoves(const Position& i) const = 0;
 
 protected:
-    std::vector<Position> generateMoves(const std::vector<Position>& directions, const Position& i);
+    std::vector<Position> generateMoves(const std::vector<Position>& directions, const Position& i) const;
 
 private:
     bool color; // 1 is white, 0 is black
@@ -28,10 +32,14 @@ private:
 class King : public Piece {
 public:
     King(bool c) : Piece(c) {}
-    PieceType getType() override {return PieceType::King;}
-    std::vector<Position> getPossibleMoves(const Position& i) override;
+    King(const King& other) : Piece(other.getColor()) {castle = other.castle;}
+    Piece* clone() const override {return new King(*this);}
+
+    PieceType getType() const override {return PieceType::King;}
     void updateCastle() {castle = 0;}
-    bool getCastle() {return castle;}
+    bool getCastle() const {return castle;}
+
+    std::vector<Position> getPossibleMoves(const Position& i) const override;
 
 private:
     bool castle = 1;
@@ -39,25 +47,35 @@ private:
 
 class Queen : public Piece {
 public:
-    Queen(bool c) : Piece(c) {}
-    PieceType getType() override {return PieceType::Queen;}
-    std::vector<Position> getPossibleMoves (const Position& i) override;
+    using Piece::Piece;
+    Piece* clone() const override {return new Queen(*this);}
+
+    PieceType getType() const override {return PieceType::Queen;}
+
+    std::vector<Position> getPossibleMoves(const Position& i) const override;
 };
 
 class Bishop : public Piece {
 public:
-    Bishop(bool c) : Piece(c) {}
-    PieceType getType() override {return PieceType::Bishop;}
-    std::vector<Position> getPossibleMoves(const Position& i) override;
+    using Piece::Piece;
+    Piece* clone() const override {return new Bishop(*this);}
+
+    PieceType getType() const override {return PieceType::Bishop;}
+
+    std::vector<Position> getPossibleMoves(const Position& i) const override;
 };
 
 class Rook : public Piece {
 public:
     Rook(bool c) : Piece(c) {}
-    PieceType getType() override {return PieceType::Rook;}
-    std::vector<Position> getPossibleMoves(const Position& i) override;
+    Rook(const Rook& other) : Piece(other.getColor()) {castle = other.castle;}
+    Piece* clone() const override {return new Rook(*this);}
+
+    PieceType getType() const override {return PieceType::Rook;}
     void updateCastle() {castle = 0;}
-    bool getCastle() {return castle;}
+    bool getCastle() const {return castle;}
+
+    std::vector<Position> getPossibleMoves(const Position& i) const override;
 
 private:
     bool castle = 1;
@@ -66,12 +84,16 @@ private:
 class Pawn : public Piece {
 public:
     Pawn(bool c) : Piece(c) {}
-    PieceType getType() override {return PieceType::Pawn;}
-    std::vector<Position> getPossibleMoves(const Position& i) override;
+    Pawn(const Pawn& other) : Piece(other.getColor()) {isFirstMove = other.isFirstMove; enPassant = other.enPassant;}
+    Piece* clone() const override {return new Pawn(*this);}
+
+    PieceType getType() const override {return PieceType::Pawn;}
     void updateEnPassant() {enPassant = (enPassant) ? 0 : 1;}
-    bool getEnPassant() {return enPassant;}
+    bool getEnPassant() const {return enPassant;}
     void updateIsFirstMove() {isFirstMove = 0;}
-    bool getIsFirstMove() {return isFirstMove;}
+    bool getIsFirstMove() const {return isFirstMove;}
+
+    std::vector<Position> getPossibleMoves(const Position& i) const override;
 
 private:
     bool isFirstMove = 1;
@@ -80,9 +102,12 @@ private:
 
 class Knight : public Piece {
 public:
-    Knight(bool c) : Piece(c) {}
-    PieceType getType() override {return PieceType::Knight;}
-    std::vector<Position> getPossibleMoves(const Position& i) override;
+    using Piece::Piece;
+    Piece* clone() const override {return new Knight(*this);}
+
+    PieceType getType() const override {return PieceType::Knight;}
+
+    std::vector<Position> getPossibleMoves(const Position& i) const override;
 };
 
 extern char to_char(const PieceType& piece);

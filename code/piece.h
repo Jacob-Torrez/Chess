@@ -19,8 +19,7 @@ public:
     virtual std::vector<Position> getPossibleMoves(const Position& i) = 0;
 
 protected:
-    bool isWithinBounds(const Position& p);
-    std::vector<Position> checkDirections(const std::vector<Position>& directions, const Position& i);
+    std::vector<Position> generateMoves(const std::vector<Position>& directions, const Position& i);
 
 private:
     bool color; // 1 is white, 0 is black
@@ -87,3 +86,5 @@ public:
 };
 
 extern char to_char(const PieceType& piece);
+
+extern bool isWithinBounds(const Position& p);

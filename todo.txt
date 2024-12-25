@@ -4,6 +4,6 @@ Implement move validation in Board class:
     - not putting king in check
 
 Implement player input for 1v1:
-    - include input verification for valid piece + in bounds
+    - include input verification for valid piece + in bounds + COLOR
 
 Implement minimax algorithm

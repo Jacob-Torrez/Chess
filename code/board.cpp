@@ -11,7 +11,10 @@ Board::Board(){
 Board::~Board(){
     for (int i = 0; i < MAX_HEIGHT; i++){
         for (int j = 0; j < MAX_WIDTH; j++){
-            delete board[i][j];
+            if (board[i][j]){
+                delete board[i][j];
+                board[i][j] = nullptr;
+            }
         }
     }
 }
@@ -129,24 +132,35 @@ bool Board::isValidMove(const Position& i, const Position& f) const {
             if (isMovePathClear(i, f) || (*this)[i]->getType() == PieceType::Knight){ // checks if path is clear or if piece is knight
                 Board simulatedMove(*this);
                 simulatedMove.movePiece(i, f);
+
+                if ((*this)[i]->getType() == PieceType::King){
+                    king = f;
+                }
+
                 if (!simulatedMove.isKingInCheck(king)){
                     switch ((*this)[i]->getType()){
-                        case PieceType::Pawn:
+                        case PieceType::Pawn: // en passant AND first move
 
                             break;
 
                         case PieceType::King:
                             if (abs(f.col - i.col) == 2){ // checks for castle
                                 int castleSide = (f.col - i.col == 2) ? 1 : -2; // determines king/queen side castle
-                                Position rook = {i.row, f.col + castleSide};
-                                if ((*this)[rook] && (*this)[rook]->getType() == PieceType::Rook && dynamic_cast<Rook*>((*this)[rook])->getCastle()){ // checks for rook and if can castle
-                                    if (castleSide == -2){ // if queen side check path
-                                        if (isMovePathClear(rook, {i.row, f.col + 1})){
+
+                                simulatedMove.movePiece(f, {i.row, i.col + ((castleSide == 1) ? 1 : -1)});
+                                king = {i.row, i.col + ((castleSide == 1) ? 1 : -1)};
+                                if (!simulatedMove.isKingInCheck(king)){
+
+                                    Position rook = {i.row, f.col + castleSide};
+                                    if ((*this)[rook] && (*this)[rook]->getType() == PieceType::Rook && dynamic_cast<Rook*>((*this)[rook])->getCastle()){ // checks for rook and if can castle
+                                        if (castleSide == -2){ // if queen side check path
+                                            if (isMovePathClear(rook, {i.row, f.col + 1})){
+                                                return true;
+                                            }
+                                        }
+                                        else {
                                             return true;
                                         }
-                                    }
-                                    else {
-                                        return true;
                                     }
                                 }
                             }
@@ -211,5 +225,5 @@ bool Board::isKingInCheck(const Position& king) const {
 void Board::movePiece(const Position& i, const Position& f) {
     delete (*this)[f];
     (*this)[f] = (*this)[i];
-    (*this)[i] == nullptr;
+    (*this)[i] = nullptr;
 }

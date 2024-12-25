@@ -32,7 +32,7 @@ private:
 class King : public Piece {
 public:
     King(bool c) : Piece(c) {}
-    King(const King& other) : Piece(other.getColor()) {castle = other.castle;}
+    King(const King& other) : Piece(other.getColor()), castle(other.castle) {}
     Piece* clone() const override {return new King(*this);}
 
     PieceType getType() const override {return PieceType::King;}
@@ -68,7 +68,7 @@ public:
 class Rook : public Piece {
 public:
     Rook(bool c) : Piece(c) {}
-    Rook(const Rook& other) : Piece(other.getColor()) {castle = other.castle;}
+    Rook(const Rook& other) : Piece(other.getColor()), castle(other.castle) {}
     Piece* clone() const override {return new Rook(*this);}
 
     PieceType getType() const override {return PieceType::Rook;}
@@ -84,7 +84,7 @@ private:
 class Pawn : public Piece {
 public:
     Pawn(bool c) : Piece(c) {}
-    Pawn(const Pawn& other) : Piece(other.getColor()) {isFirstMove = other.isFirstMove; enPassant = other.enPassant;}
+    Pawn(const Pawn& other) : Piece(other.getColor()), isFirstMove(other.isFirstMove), enPassant(other.enPassant) {}
     Piece* clone() const override {return new Pawn(*this);}
 
     PieceType getType() const override {return PieceType::Pawn;}

@@ -33,8 +33,8 @@ private:
     bool moveFound(const std::vector<Position>& moves, const Position& move) const;
     bool checkDirection(const Position& king, const Position& dir, const bool& kingColor, const bool& oppColor, const PieceType& type1, const PieceType& type2) const;
 
-    Position whiteKing;
-    Position blackKing;
+    Position whiteKing = {7,4};
+    Position blackKing = {0,4};
 
     bool turn = Color::White; // white  = 1, black = 0
 

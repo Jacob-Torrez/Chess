@@ -38,7 +38,7 @@ Board& Board::operator=(const Board& other){
     }
 
     for (int i = 0; i < MAX_HEIGHT; i++){
-        for (int j = 0; j < MAX_HEIGHT; j++){
+        for (int j = 0; j < MAX_WIDTH; j++){
             delete board[i][j];
             if (other.board[i][j]){
                 board[i][j] = other.board[i][j]->clone();
@@ -108,7 +108,7 @@ bool Board::isMovePathClear(const Position& i, const Position& f) const {
 
     Position step(rowStep, colStep);
 
-    if (i.col != f.col && i.row != f.row && (f.row - i.row != f.col - i.col)){ // makes sure path is hori, vert, or diag
+    if (i.col != f.col && i.row != f.row && abs(f.row - i.row) != abs(f.col - i.col)){ // makes sure path is hori, vert, or diag
         return false;
     }
 
@@ -123,61 +123,95 @@ bool Board::isMovePathClear(const Position& i, const Position& f) const {
     return true;
 }
 
-bool Board::isValidMove(const Position& i, const Position& f) const {
-    std::vector<Position> moves = (*this)[i]->getPossibleMoves(i);
-    Position king = (getTurn()) ? getWhiteKing() : getBlackKing();
+bool Board::kingMoveValidation(const Position& i, const Position& f, Board& simulatedBoard) const {
+    if (abs(f.col - i.col) == 2){ // checks for castle
 
-    if (moveFound(moves, f)){ // checks if move matches behavior of piece
-        if (!(*this)[f] || (*this)[f]->getColor() != (*this)[i]->getColor()){ // checks for empty space or opposite color piece at final position
-            if (isMovePathClear(i, f) || (*this)[i]->getType() == PieceType::Knight){ // checks if path is clear or if piece is knight
-                Board simulatedMove(*this);
-                simulatedMove.movePiece(i, f);
+        int castleDirection = (f.col > i.col) ? 1 : -1;
 
-                if ((*this)[i]->getType() == PieceType::King){
-                    king = f;
-                }
+        // determine if rook is available to castle
+        Position rookPosition = (castleDirection == 1) ? Position{i.row, MAX_HEIGHT - 1} : Position{i.row, 0};
+        if (!(*this)[rookPosition] || (*this)[rookPosition]->getType() != PieceType::Rook || !dynamic_cast<Rook*>((*this)[rookPosition])->getCastle()) {
+            return false;
+        }
 
-                if (!simulatedMove.isKingInCheck(king)){
-                    switch ((*this)[i]->getType()){
-                        case PieceType::Pawn: // en passant AND first move
+        // make sure king isn't castling through check
+        Position intermediateKingPosition = {i.row, i.col + castleDirection};
+        simulatedBoard.movePiece(f, intermediateKingPosition);
+        if (simulatedBoard.isKingInCheck(intermediateKingPosition)) {
+            return false;
+        }
 
-                            break;
+        // check rook path for queen side castle
+        if (castleDirection == -1 && !isMovePathClear(rookPosition, {i.row, i.col - 1})) {
+            return false;
+        }
+    }
+    
+    return true;
+}
 
-                        case PieceType::King:
-                            if (abs(f.col - i.col) == 2){ // checks for castle
-                                int castleSide = (f.col - i.col == 2) ? 1 : -2; // determines king/queen side castle
+bool Board::pawnMoveValidation(const Position& i, const Position& f) const {
+    Position direction = {f.row - i.row, f.col - i.col};
 
-                                simulatedMove.movePiece(f, {i.row, i.col + ((castleSide == 1) ? 1 : -1)});
-                                king = {i.row, i.col + ((castleSide == 1) ? 1 : -1)};
-                                if (!simulatedMove.isKingInCheck(king)){
+    // check for diagonal move
+    if (abs(direction.col) == 1 && abs(direction.row) == 1){
+        if ((*this)[f] && (*this)[f]->getColor() != (*this)[i]->getColor()){
+            return true; // standard capture
+        }
 
-                                    Position rook = {i.row, f.col + castleSide};
-                                    if ((*this)[rook] && (*this)[rook]->getType() == PieceType::Rook && dynamic_cast<Rook*>((*this)[rook])->getCastle()){ // checks for rook and if can castle
-                                        if (castleSide == -2){ // if queen side check path
-                                            if (isMovePathClear(rook, {i.row, f.col + 1})){
-                                                return true;
-                                            }
-                                        }
-                                        else {
-                                            return true;
-                                        }
-                                    }
-                                }
-                            }
-                            else {
-                                return true;
-                            }
-                            break;
+        if ((*this)[{i.row, f.col}] && (*this)[{i.row, f.col}]->getType() == PieceType::Pawn &&
+            (*this)[{i.row, f.col}]->getColor() != (*this)[i]->getColor() &&
+            dynamic_cast<Pawn*>((*this)[{i.row, f.col}])->getEnPassant()){
+                return true; // en passant
+        }
+    }
 
-                        default:
-                            return true;
-                    }
-                }
-            }
+    if (abs(direction.row) == 2 && direction.col == 0){
+        if (dynamic_cast<Pawn*>((*this)[i])->getIsFirstMove() && !(*this)[f]){
+            return true;
+        }
+    }
+
+    if (abs(direction.row) == 1 && direction.col == 0) {
+        if (!(*this)[f]){
+            return true;
         }
     }
 
     return false;
+}
+
+bool Board::isValidMove(const Position& i, const Position& f) const {
+    std::vector<Position> possibleMoves = (*this)[i]->getPossibleMoves(i);
+    Position kingPosition = (getTurn()) ? getWhiteKing() : getBlackKing();
+
+    if (!moveFound(possibleMoves, f)) {return false;} // checks if move matches behavior of piece
+
+    if ((*this)[f] && (*this)[f]->getColor() == (*this)[i]->getColor()) {return false;} // checks for empty space or opposite color
+
+    if (!isMovePathClear(i, f) && (*this)[i]->getType() != PieceType::Knight) {return false;} // checks if path is clear or knight
+
+    // if king is moving update its position
+    if ((*this)[i]->getType() == PieceType::King){
+        kingPosition = f;
+    }
+
+    // check if new position leaves king in check
+    Board simulatedBoard(*this);
+    simulatedBoard.movePiece(i, f);
+    if (simulatedBoard.isKingInCheck(kingPosition)){return false;}
+
+    // final checks for castle and en passant
+    switch ((*this)[i]->getType()){
+        case PieceType::Pawn: 
+            return pawnMoveValidation(i, f);
+
+        case PieceType::King:
+            return kingMoveValidation(i, f, simulatedBoard);
+
+        default:
+            return true;
+    }
 }
 
 bool Board::isKingInCheck(const Position& king) const {

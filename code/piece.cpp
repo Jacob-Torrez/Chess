@@ -45,7 +45,8 @@ std::vector<Position> Pawn::getPossibleMoves(const Position& i) const {
     std::vector<Position> moves = std::move(generateMoves(directions, i));
 
     if (this->getIsFirstMove()){
-        moves.push_back({direction * 2, 0});
+        Position pushTwo = {direction * 2, 0};
+        moves.push_back(i + pushTwo);
     }
 
     return moves;

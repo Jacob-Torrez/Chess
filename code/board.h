@@ -12,7 +12,6 @@ public:
     ~Board();
     
     void printBoard() const;
-    bool isMovePathClear(const Position& i, const Position& f) const;
     bool isValidMove(const Position& i, const Position& f) const;
     bool isKingInCheck(const Position& king) const;
     void movePiece(const Position& i, const Position& f);
@@ -30,8 +29,11 @@ public:
     Piece*& operator[](const Position& p){return board[p.row][p.col];}
 
 private:
+    bool isMovePathClear(const Position& i, const Position& f) const;
     bool moveFound(const std::vector<Position>& moves, const Position& move) const;
     bool checkDirection(const Position& king, const Position& dir, const bool& kingColor, const bool& oppColor, const PieceType& type1, const PieceType& type2) const;
+    bool kingMoveValidation(const Position& i, const Position& f, Board& simulatedBoard) const;
+    bool pawnMoveValidation(const Position& i, const Position& f) const;
 
     Position whiteKing = {7,4};
     Position blackKing = {0,4};

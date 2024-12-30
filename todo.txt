@@ -1,7 +1,5 @@
 TODO:
-Implement move validation in Board class:
-    - particularly for en passant and castle
-    - not putting king in check
+Add pawn promotion
 
 Implement player input for 1v1:
     - include input verification for valid piece + in bounds + COLOR

@@ -16,7 +16,7 @@ std::vector<Position> Piece::generateMoves(const std::vector<Position>& directio
 std::vector<Position> King::getPossibleMoves(const Position& i) const {
     std::vector<Position> directions = {{0, 1}, {0, -1}, {1, 0}, {-1, 0}, {1, 1}, {1, -1}, {-1, 1}, {-1, -1}};
 
-    std::vector<Position> moves = std::move(generateMoves(directions, i));
+    std::vector<Position> moves = generateMoves(directions, i);
 
     if (this->getCastle()){ // castle
         Position castles[] = {{0, 2}, {0, -2}};
@@ -33,7 +33,7 @@ std::vector<Position> King::getPossibleMoves(const Position& i) const {
 std::vector<Position> Knight::getPossibleMoves(const Position& i) const {
     std::vector<Position> directions = {{1, 2}, {1, -2}, {-1, 2}, {-1, -2}, {2, 1}, {2, -1}, {-2, 1}, {-2, -1}};
 
-    std::vector<Position> moves = std::move(generateMoves(directions, i));
+    std::vector<Position> moves = generateMoves(directions, i);
 
     return moves;
 }
@@ -42,7 +42,7 @@ std::vector<Position> Pawn::getPossibleMoves(const Position& i) const {
     int direction = (this->getColor()) ? -1 : 1;
     std::vector<Position> directions = {{direction * 1, 0}, {direction * 1, 1}, {direction * 1, -1}};
 
-    std::vector<Position> moves = std::move(generateMoves(directions, i));
+    std::vector<Position> moves = generateMoves(directions, i);
 
     if (this->getIsFirstMove()){
         Position pushTwo = {direction * 2, 0};
@@ -55,7 +55,7 @@ std::vector<Position> Pawn::getPossibleMoves(const Position& i) const {
 std::vector<Position> Rook::getPossibleMoves(const Position& i) const {
     std::vector<Position> directions = {{0, 1}, {0, -1}, {1, 0}, {-1, 0}};
 
-    std::vector<Position> moves = std::move(generateMoves(directions, i));
+    std::vector<Position> moves = generateMoves(directions, i);
 
     return moves;
 }
@@ -63,7 +63,7 @@ std::vector<Position> Rook::getPossibleMoves(const Position& i) const {
 std::vector<Position> Bishop::getPossibleMoves(const Position& i) const {
     std::vector<Position> directions = {{1, 1}, {-1, 1}, {1, -1}, {-1, -1}};
 
-    std::vector<Position> moves = std::move(generateMoves(directions, i));
+    std::vector<Position> moves = generateMoves(directions, i);
 
     return moves;
 }
@@ -71,7 +71,7 @@ std::vector<Position> Bishop::getPossibleMoves(const Position& i) const {
 std::vector<Position> Queen::getPossibleMoves(const Position& i) const {
     std::vector<Position> directions = {{1, 1}, {-1, 1}, {1, -1}, {-1, -1}, {0, 1}, {0, -1}, {1, 0}, {-1, 0}};
 
-    std::vector<Position> moves = std::move(generateMoves(directions, i));
+    std::vector<Position> moves = generateMoves(directions, i);
 
     return moves;
 }

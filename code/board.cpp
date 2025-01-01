@@ -324,3 +324,105 @@ void Board::movePiece(const Position& i, const Position& f, const bool& turn) {
 
     }
 }
+
+void Board::promotePawn(const Position& p, const char& type){
+    bool color = getPiece(p)->getColor();
+    delete getPiece(p);
+    
+    switch (type){
+        case 'B':
+            getPiece(p) = new Bishop(color);
+            break;
+
+        case 'Q':
+            getPiece(p) = new Queen(color);
+            break;
+
+        case 'N':
+            getPiece(p) = new Knight(color);
+            break;
+
+        case 'R':
+            getPiece(p) = new Rook(color);
+            break;
+    }
+}
+
+bool Board::isPawnPromotion(const Position& p) const {
+    return (*this).getPiece(p)->getType() == PieceType::Pawn && (p.row == MAX_HEIGHT || p.row == MIN_HEIGHT);
+}
+
+std::vector<std::pair<Position, Position>> Board::getLegalMoves(const bool& turn) const {
+    std::vector<std::pair<Position, Position>> legalMoves;
+    legalMoves.reserve(75);
+    Color color = (turn) ? Color::White : Color::Black;
+
+    for (int i = 0; i < MAX_HEIGHT; i++){
+        for (int j = 0; j < MAX_WIDTH; j++){
+            if ((*this).getPiece({i, j}) && (*this).getPiece({i, j})->getColor() == color){
+                std::vector<Position> possibleMoves = (*this).getPiece({i, j})->getPossibleMoves({i, j});
+                for (const auto& move : possibleMoves){
+                    if (isValidMove({i, j}, move, turn)){
+                        legalMoves.push_back({{i, j}, move});
+                    }
+                }
+            }
+        }
+    }
+
+    return legalMoves;
+}
+
+bool Board::isCheckmate(const bool& turn) const {
+    Position king = (turn) ? getWhiteKing() : getBlackKing();
+
+    // check if king is in check
+    if (!isKingInCheck(king)){
+        return false;
+    }
+
+    if (!getLegalMoves(turn).empty()){
+        return false;
+    }
+
+    return true;
+}
+
+bool Board::isDraw(const bool& turn) const {
+    Position king = (turn) ? getWhiteKing() : getBlackKing();
+
+    if (!isKingInCheck(king) && getLegalMoves(turn).empty()){
+        return true;
+    }
+
+    // insufficient material check
+    std::pair<int, int> material = countMaterial();
+    if ((material.first == 0) || (material.first == 1 && material.second == 1)){
+        return true;
+    }
+
+    return false;
+}
+
+std::pair<int, int> Board::countMaterial() const {
+    std::pair<int, int> material = {0, 0}; // {total, minor}
+
+    for (int i = 0; i < MAX_HEIGHT; i++){
+        for (int j = 0; j < MAX_WIDTH; j++){
+            if ((*this).getPiece({i, j})){
+                if ((*this).getPiece({i, j})->getType() != PieceType::King){
+                    material.first++;
+                }
+                if (((*this).getPiece({i, j})->getType() == PieceType::Bishop) || ((*this).getPiece({i, j})->getType() == PieceType::Knight)){
+                    material.second++;
+                }
+                // Break early if there is sufficient material
+                if (material.first > 1 || (material.first == 1 && material.second > 1)){
+                    break;
+                }
+            }
+        }
+    }
+
+    return material;
+}

@@ -239,7 +239,7 @@ bool Board::isValidMove(const Position& i, const Position& f, const bool& turn) 
 
     // final checks for castle and en passant
     switch (getPiece(i)->getType()){
-        case PieceType::Pawn: 
+        case PieceType::Pawn:
             return pawnMoveValidation(i, f);
 
         case PieceType::King:

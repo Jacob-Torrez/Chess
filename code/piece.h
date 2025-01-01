@@ -23,7 +23,7 @@ public:
     virtual std::vector<Position> getPossibleMoves(const Position& i) const = 0;
 
 protected:
-    virtual std::vector<Position> generateMoves(const std::vector<Position>& directions, const Position& i) const;
+    virtual std::vector<Position> generateMoves(const std::vector<Position>& directions, const Position& i, const bool& sliding) const;
 
 private:
     bool color; // 1 is white, 0 is black
@@ -88,7 +88,8 @@ public:
     Piece* clone() const override {return new Pawn(*this);}
 
     PieceType getType() const override {return PieceType::Pawn;}
-    void updateEnPassant() {enPassant = (enPassant) ? 0 : 1;}
+    void enableEnPassant() {enPassant = 1;}
+    void disableEnPassant() {enPassant = 0;}
     bool getEnPassant() const {return enPassant;}
     void updateIsFirstMove() {isFirstMove = 0;}
     bool getIsFirstMove() const {return isFirstMove;}

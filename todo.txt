@@ -1,7 +1,9 @@
 TODO:
-Add pawn promotion
-
-Implement player input for 1v1:
-    - include input verification for valid piece + in bounds + COLOR
-
 Implement minimax algorithm
+
+review existing code:
+optimize redundancies
+clean up messy code
+ensure proper encapsulation ***
+clean up input
+rename functions to be easier to follow

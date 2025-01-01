@@ -11,6 +11,11 @@ void Game::play() {
             std::cout << "Input " << ((turn) ? "white move:" : "black move:") << std::endl;
             std::cin >> initial >> final;
 
+            if (initial == "q" || initial == "Q" || initial == "quit" || initial == "Quit"){
+                gameOver = 1;
+                return;
+            }
+
             if (isValidInput(initial, final)){
                 validInput = true;
             }
@@ -19,24 +24,32 @@ void Game::play() {
             }
         }
 
+        // convert algebraic to matrix position
         Position i = parsePosition(initial);
         Position f = parsePosition(final);
 
+        // move piece(s)
         board.movePiece(i, f, turn);
+        
+        // update special rules (castle, en passant, first move)
+        updateSpecialRules(i, f);
 
         // check for pawn promotion
         if (board.isPawnPromotion(f)){
             handlePawnPromotion(f);
         }
 
+        // update turn
         turn = (turn) ? 0 : 1;
 
         // check for checkmate or draw
         if (board.isCheckmate(turn)){
+            board.printBoard();
             std::cout << ((turn) ? "Black " : "White ") << "has won!\n";
             gameOver = 1;
         }
         if (board.isDraw(turn)){
+            board.printBoard();
             std::cout << "Draw!\n";
             gameOver = 1;
         }
@@ -80,4 +93,31 @@ bool Game::isValidInput(const std::string& initial, const std::string& final) co
 
 Position Game::parsePosition(const std::string& s) const {
     return Position{'8' - s[1], s[0] - 'a'};
+}
+
+void Game::updateSpecialRules(const Position& i, const Position& f){
+
+    for (int j = 0; j < MAX_WIDTH; j++){
+        if (board.getPiece({1, j}) && board.getPiece({1, j})->getType() == PieceType::Pawn){
+            dynamic_cast<Pawn*>(board.getPiece({1, j}))->disableEnPassant();
+        }
+        if (board.getPiece({7, j}) && board.getPiece({7, j})->getType() == PieceType::Pawn){
+            dynamic_cast<Pawn*>(board.getPiece({7, j}))->disableEnPassant();
+        }
+    }
+
+    if (board.getPiece(f)->getType() == PieceType::Rook){
+        dynamic_cast<Rook*>(board.getPiece(f))->updateCastle();
+    }
+
+    if (board.getPiece(f)->getType() == PieceType::King){
+        dynamic_cast<King*>(board.getPiece(f))->updateCastle();
+    }
+
+    if (board.getPiece(f)->getType() == PieceType::Pawn){
+        dynamic_cast<Pawn*>(board.getPiece(f))->updateIsFirstMove();
+        if (abs(f.row - i.col) == 2){
+            dynamic_cast<Pawn*>(board.getPiece(f))->enableEnPassant();
+        }
+    }
 }

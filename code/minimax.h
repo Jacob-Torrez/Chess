@@ -1,0 +1,6 @@
+class Minimax {
+public:
+
+private:
+
+};

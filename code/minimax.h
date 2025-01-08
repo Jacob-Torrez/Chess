@@ -1,6 +1,0 @@
-class Minimax {
-public:
-
-private:
-
-};

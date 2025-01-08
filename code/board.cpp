@@ -1,6 +1,6 @@
 #include "board.h"
 
-Board::Board(){
+Board::Board() : whiteKing({7,4}), blackKing({0,4}) {
     for (int i = 0; i < MAX_HEIGHT; i++){
         for (int j = 0; j < MAX_WIDTH; j++){
             board[i][j] = nullptr;
@@ -84,7 +84,7 @@ Board& Board::operator=(const Board& other){
     return *this;
 }
 
-bool Board::moveFound(const std::vector<Position>& moves, const Position& move) const {
+bool Board::possibleMoveFound(const std::vector<Position>& moves, const Position& move) const {
     for (const auto& m : moves){
         if (m == move){
             return true;
@@ -94,14 +94,15 @@ bool Board::moveFound(const std::vector<Position>& moves, const Position& move) 
     return false;
 }
 
-bool Board::checkDirection(const Position& king, const Position& dir, const bool& kingColor, const bool& oppColor, const PieceType& type1, const PieceType& type2) const {
+bool Board::checkAttackDirection(const Position& king, const Position& dir, const bool& kingColor, const bool& oppColor, const PieceType& type1, const PieceType& type2) const {
     Position current = king + dir;
         while (isWithinBounds(current)){
-            if (getPiece(current)){
-                if (getPiece(current)->getColor() == kingColor){
+            const Piece* piece = getPiece(current);
+            if (piece){
+                if (piece->getColor() == kingColor){
                     break;
                 }
-                else if (getPiece(current)->getColor() == oppColor && (getPiece(current)->getType() == type1 || getPiece(current)->getType() == type2)){
+                else if (piece->getColor() == oppColor && (piece->getType() == type1 || piece->getType() == type2)){
                     return true;
                 }
             }
@@ -116,12 +117,13 @@ void Board::printBoard() const {
     for (int i = 0; i < MAX_HEIGHT; i++){
         std::cout << " +---+---+---+---+---+---+---+---+" << std::endl;
         for (int j = 0; j < MAX_WIDTH; j++){
-            if (board[i][j]){
-                if (board[i][j]->getColor() == Color::White){
-                    std::cout << " | " << to_char(board[i][j]->getType());
+            Piece* piece = getPiece({i, j});
+            if (piece){
+                if (piece->getColor() == Color::White){
+                    std::cout << " | " << to_char(piece->getType());
                 }
                 else{
-                    std::cout << " | " << static_cast<char>(tolower(to_char(board[i][j]->getType())));
+                    std::cout << " | " << static_cast<char>(tolower(to_char(piece->getType())));
                 }
             }
             else {
@@ -134,7 +136,7 @@ void Board::printBoard() const {
     std::cout << " +---+---+---+---+---+---+---+---+" << std::endl;
 }
 
-bool Board::isMovePathClear(const Position& i, const Position& f) const {
+bool Board::checkMovePath(const Position& i, const Position& f) const {
     int rowStep = (f.row > i.row) - (f.row < i.row); // gets direction as 0, 1, or -1
     int colStep = (f.col > i.col) - (f.col < i.col);
 
@@ -162,7 +164,8 @@ bool Board::kingMoveValidation(const Position& i, const Position& f, Board& simu
 
         // determine if rook is available to castle
         Position rookPosition = (castleDirection == 1) ? Position{i.row, MAX_HEIGHT - 1} : Position{i.row, 0};
-        if (!getPiece(rookPosition) || getPiece(rookPosition)->getType() != PieceType::Rook || !dynamic_cast<Rook*>(getPiece(rookPosition))->getCastle()) {
+        Piece* rook = getPiece(rookPosition);
+        if (!rook || rook->getType() != PieceType::Rook || !dynamic_cast<Rook*>(rook)->getCastle()) {
             return false;
         }
 
@@ -176,7 +179,7 @@ bool Board::kingMoveValidation(const Position& i, const Position& f, Board& simu
         }
 
         // check rook path for queen side castle
-        if (castleDirection == -1 && !isMovePathClear(rookPosition, {i.row, i.col - 1})) {
+        if (castleDirection == -1 && !checkMovePath(rookPosition, {i.row, i.col - 1})) {
             return false;
         }
     }
@@ -186,28 +189,31 @@ bool Board::kingMoveValidation(const Position& i, const Position& f, Board& simu
 
 bool Board::pawnMoveValidation(const Position& i, const Position& f) const {
     Position direction = {f.row - i.row, f.col - i.col};
+    Piece* initial = getPiece(i);
+    Piece* final = getPiece(f);
 
     // check for diagonal move
     if (abs(direction.col) == 1 && abs(direction.row) == 1){
-        if (getPiece(f) && getPiece(f)->getColor() != getPiece(i)->getColor()){
+        if (final && final->getColor() != initial->getColor()){
             return true; // standard capture
         }
 
-        if (getPiece({i.row, f.col}) && getPiece({i.row, f.col})->getType() == PieceType::Pawn &&
-            getPiece({i.row, f.col})->getColor() != getPiece(i)->getColor() &&
-            dynamic_cast<Pawn*>(getPiece({i.row, f.col}))->getEnPassant()){
+        Piece* enPassant = getPiece({i.row, f.col});
+        if (enPassant && enPassant->getType() == PieceType::Pawn &&
+            enPassant->getColor() != initial->getColor() &&
+            dynamic_cast<Pawn*>(enPassant)->getEnPassant()){
                 return true; // en passant
         }
     }
 
     if (abs(direction.row) == 2 && direction.col == 0){
-        if (dynamic_cast<Pawn*>(getPiece(i))->getIsFirstMove() && !getPiece(f)){
+        if (dynamic_cast<Pawn*>(initial)->getIsFirstMove() && !final){
             return true;
         }
     }
 
     if (abs(direction.row) == 1 && direction.col == 0) {
-        if (!getPiece(f)){
+        if (!final){
             return true;
         }
     }
@@ -216,17 +222,19 @@ bool Board::pawnMoveValidation(const Position& i, const Position& f) const {
 }
 
 bool Board::isValidMove(const Position& i, const Position& f, const bool& turn) const {
-    std::vector<Position> possibleMoves = getPiece(i)->getPossibleMoves(i);
-    Position kingPosition = (turn) ? getWhiteKing() : getBlackKing();
+    Piece* initial = getPiece(i);
+    Piece* final = getPiece(f);
+    std::vector<Position> possibleMoves = initial->getPossibleMoves(i);
+    Position kingPosition = (turn) ? whiteKing : blackKing;
 
-    if (!moveFound(possibleMoves, f)) {return false;} // checks if move matches behavior of piece
+    if (!possibleMoveFound(possibleMoves, f)) {return false;} // checks if move matches behavior of piece
 
-    if (getPiece(f) && getPiece(f)->getColor() == getPiece(i)->getColor()) {return false;} // checks for empty space or opposite color
+    if (final  && final ->getColor() == initial->getColor()) {return false;} // checks for empty space or opposite color
 
-    if (!isMovePathClear(i, f) && getPiece(i)->getType() != PieceType::Knight) {return false;} // checks if path is clear or knight
+    if (!checkMovePath(i, f) && initial->getType() != PieceType::Knight) {return false;} // checks if path is clear or knight
 
     // if king is moving update its position
-    if (getPiece(i)->getType() == PieceType::King){
+    if (initial->getType() == PieceType::King){
         kingPosition = f;
     }
 
@@ -238,7 +246,7 @@ bool Board::isValidMove(const Position& i, const Position& f, const bool& turn) 
     if (simulatedBoard.isKingInCheck(kingPosition)){return false;}
 
     // final checks for castle and en passant
-    switch (getPiece(i)->getType()){
+    switch (initial->getType()){
         case PieceType::Pawn:
             return pawnMoveValidation(i, f);
 
@@ -276,7 +284,7 @@ bool Board::isKingInCheck(const Position& king) const {
     // bishop/queen checks
     std::vector<Position> diagonalAttackDirections = {{1, 1}, {-1, 1}, {1, -1}, {-1, -1}};
     for (const auto& dir : diagonalAttackDirections){
-        if (checkDirection(king, dir, kingColor, oppColor, PieceType::Bishop, PieceType::Queen)){
+        if (checkAttackDirection(king, dir, kingColor, oppColor, PieceType::Bishop, PieceType::Queen)){
             return true;
         }
     }
@@ -284,7 +292,7 @@ bool Board::isKingInCheck(const Position& king) const {
     // queen/rook checks
     std::vector<Position> orthogonalAttackDirections = {{0, 1}, {0, -1}, {1, 0}, {-1, 0}};
     for (const auto& dir : orthogonalAttackDirections){
-        if (checkDirection(king, dir, kingColor, oppColor, PieceType::Rook, PieceType::Queen)){
+        if (checkAttackDirection(king, dir, kingColor, oppColor, PieceType::Rook, PieceType::Queen)){
             return true;
         }
     }
@@ -292,64 +300,75 @@ bool Board::isKingInCheck(const Position& king) const {
     return false;
 }
 
-void Board::movePiece(const Position& i, const Position& f, const bool& turn) {
+MoveInfo Board::movePiece(const Position& i, const Position& f, const bool& turn) {
+    MoveInfo moveInfo = {};
 
-    if (isValidMove(i, f, turn)){
-        if (getPiece(i)->getType() == PieceType::King){ // castling
-            (turn) ? updateWhiteKing(f) : updateBlackKing(f); // update king position
+    disableEnPassant(moveInfo);
 
-            if (abs(f.col - i.col) == 2){
-                int castleDirection = (f.col > i.col) ? 1 : -1;
-                Position iRookPosition = (castleDirection == 1) ? Position{i.row, MAX_HEIGHT - 1} : Position{i.row, 0};
-                Position fRookPosition = {i.row, i.col + castleDirection};
+    // saving moved piece's position
+    moveInfo.start = i;
+    moveInfo.end = f;
 
-                delete getPiece(fRookPosition);
-                getPiece(fRookPosition) = getPiece(iRookPosition);
-                getPiece(iRookPosition) = nullptr;
-            }
+    Piece* initial = getPiece(i);
+    Piece* final = getPiece(f);
 
-        }
-        else if (getPiece(i)->getType() == PieceType::Pawn){ // en passant
-            if (getPiece({i.row, f.col}) && getPiece({i.row, f.col})->getType() == PieceType::Pawn &&
-            getPiece({i.row, f.col})->getColor() != getPiece(i)->getColor() &&
-            dynamic_cast<Pawn*>(getPiece({i.row, f.col}))->getEnPassant()){
-                delete getPiece({i.row, f.col});
-                getPiece({i.row, f.col}) = nullptr;
-            }
-        }
+    // copying moved piece
+    moveInfo.movedPiece = initial->clone();
 
-        delete getPiece(f);
-        getPiece(f) = getPiece(i);
-        getPiece(i) = nullptr;
-
+    // cloning captured piece and saving position
+    if (final){
+        moveInfo.capturedPiece = final->clone();
+        moveInfo.capturedPositionStart = f;
     }
-}
 
-void Board::promotePawn(const Position& p, const char& type){
-    bool color = getPiece(p)->getColor();
-    delete getPiece(p);
-    
-    switch (type){
-        case 'B':
-            getPiece(p) = new Bishop(color);
-            break;
+    if (initial->getType() == PieceType::King){ // castling
+        ((turn) ? whiteKing : blackKing) = f; // update king position
+        if (abs(f.col - i.col) == 2){
+            int castleDirection = (f.col > i.col) ? 1 : -1;
+            Piece* rookInitial = getPiece((castleDirection == 1) ? Position{i.row, MAX_HEIGHT - 1} : Position{i.row, 0});
+            Piece* rookFinal = getPiece({i.row, i.col + castleDirection});
 
-        case 'Q':
-            getPiece(p) = new Queen(color);
-            break;
+            // saving castled rook's initial and final position and cloning rook
+            moveInfo.castlingMove = true;
+            moveInfo.capturedPositionStart = (castleDirection == 1) ? Position{i.row, MAX_HEIGHT - 1} : Position{i.row, 0};
+            moveInfo.capturedPiece = getPiece(moveInfo.capturedPositionStart)->clone();
+            moveInfo.capturedPositionEnd = {i.row, i.col + castleDirection};
 
-        case 'N':
-            getPiece(p) = new Knight(color);
-            break;
-
-        case 'R':
-            getPiece(p) = new Rook(color);
-            break;
+            delete rookFinal;
+            rookFinal = initial;
+            initial = nullptr;
+        }
     }
-}
+    else if (initial->getType() == PieceType::Pawn){ // en passant
+        Piece* enPassant = getPiece({i.row, f.col});
+        if (enPassant && enPassant->getType() == PieceType::Pawn &&
+        enPassant->getColor() != initial->getColor() &&
+        dynamic_cast<Pawn*>(enPassant)->getEnPassant()){
+            
+            // cloning captured pawn and saving position
+            moveInfo.enPassantMove = true;
+            moveInfo.capturedPiece = enPassant->clone();
+            moveInfo.capturedPositionStart = {i.row, f.col};
 
-bool Board::isPawnPromotion(const Position& p) const {
-    return (*this).getPiece(p)->getType() == PieceType::Pawn && (p.row == MAX_HEIGHT || p.row == MIN_HEIGHT);
+            delete enPassant;
+            enPassant = nullptr;
+        }
+    }
+    delete final;
+    final = initial;
+    initial = nullptr;
+
+    // update special rules (eg. en passsant, castling, first move)
+    updateSpecialRules(i, f, moveInfo);
+
+    // check for pawn promotion
+    if (final->getType() == PieceType::Pawn && (f.row == MAX_HEIGHT || f.row == MIN_HEIGHT)){
+        bool color = final->getColor();
+        delete final;
+        final = new Queen(color);
+    }
+
+    return moveInfo;
 }
 
 std::vector<std::pair<Position, Position>> Board::getLegalMoves(const bool& turn) const {
@@ -359,8 +378,9 @@ std::vector<std::pair<Position, Position>> Board::getLegalMoves(const bool& turn
 
     for (int i = 0; i < MAX_HEIGHT; i++){
         for (int j = 0; j < MAX_WIDTH; j++){
-            if ((*this).getPiece({i, j}) && (*this).getPiece({i, j})->getColor() == color){
-                std::vector<Position> possibleMoves = (*this).getPiece({i, j})->getPossibleMoves({i, j});
+            Piece* piece = getPiece({i, j});
+            if (piece && piece->getColor() == color){
+                std::vector<Position> possibleMoves = piece->getPossibleMoves({i, j});
                 for (const auto& move : possibleMoves){
                     if (isValidMove({i, j}, move, turn)){
                         legalMoves.push_back({{i, j}, move});
@@ -374,7 +394,7 @@ std::vector<std::pair<Position, Position>> Board::getLegalMoves(const bool& turn
 }
 
 bool Board::isCheckmate(const bool& turn) const {
-    Position king = (turn) ? getWhiteKing() : getBlackKing();
+    Position king = (turn) ? whiteKing : blackKing;
 
     // check if king is in check
     if (!isKingInCheck(king)){
@@ -389,7 +409,7 @@ bool Board::isCheckmate(const bool& turn) const {
 }
 
 bool Board::isDraw(const bool& turn) const {
-    Position king = (turn) ? getWhiteKing() : getBlackKing();
+    Position king = (turn) ? whiteKing : blackKing;
 
     if (!isKingInCheck(king) && getLegalMoves(turn).empty()){
         return true;
@@ -409,11 +429,12 @@ std::pair<int, int> Board::countMaterial() const {
 
     for (int i = 0; i < MAX_HEIGHT; i++){
         for (int j = 0; j < MAX_WIDTH; j++){
-            if ((*this).getPiece({i, j})){
-                if ((*this).getPiece({i, j})->getType() != PieceType::King){
+            Piece* piece = getPiece({i, j});
+            if (piece){
+                if (piece->getType() != PieceType::King){
                     material.first++;
                 }
-                if (((*this).getPiece({i, j})->getType() == PieceType::Bishop) || ((*this).getPiece({i, j})->getType() == PieceType::Knight)){
+                if ((piece->getType() == PieceType::Bishop) || (piece->getType() == PieceType::Knight)){
                     material.second++;
                 }
                 // Break early if there is sufficient material
@@ -425,4 +446,81 @@ std::pair<int, int> Board::countMaterial() const {
     }
 
     return material;
+}
+
+void Board::updateSpecialRules(const Position& i, const Position& f, MoveInfo& moveInfo){
+
+    Piece* final = getPiece(f);
+    if (final->getType() == PieceType::Rook){
+        dynamic_cast<Rook*>(final)->updateCastle();
+    }
+
+    if (final->getType() == PieceType::King){
+        dynamic_cast<King*>(final)->updateCastle();
+    }
+
+    if (final->getType() == PieceType::Pawn){
+        dynamic_cast<Pawn*>(final)->updateIsFirstMove();
+        if (abs(f.row - i.col) == 2){
+            dynamic_cast<Pawn*>(final)->enableEnPassant();
+        }
+    }
+}
+
+void Board::undoMove(MoveInfo& moveInfo){
+    Piece* start = getPiece(moveInfo.start);
+    Piece* end = getPiece(moveInfo.end);
+    Piece* capturedPieceStart = getPiece(moveInfo.capturedPositionStart);
+    Piece* capturedPieceEnd = getPiece(moveInfo.capturedPositionEnd);
+
+    delete end;
+    start = moveInfo.movedPiece;
+    end = nullptr;
+
+    if (moveInfo.movedPiece->getType() == PieceType::King){ // castling
+        if (moveInfo.castlingMove){
+            delete capturedPieceEnd;
+            capturedPieceStart = moveInfo.capturedPiece;
+            capturedPieceEnd = nullptr;
+        }
+    }
+    else if (moveInfo.movedPiece->getType() == PieceType::Pawn){ // en passant
+        if (moveInfo.enPassantMove){
+            delete capturedPieceStart;
+            capturedPieceStart = moveInfo.capturedPiece;
+        }
+    }
+    else if (moveInfo.capturedPiece){
+        delete capturedPieceStart;
+        capturedPieceStart = moveInfo.capturedPiece;
+    }
+
+    revertEnPassant(moveInfo);
+
+    moveInfo.movedPiece = nullptr;
+    moveInfo.capturedPiece = nullptr;
+}
+
+void Board::revertEnPassant(const MoveInfo& moveInfo){
+    for (const auto& pos : moveInfo.enPassantUpdates){
+        Piece* pawn = getPiece(pos);
+        dynamic_cast<Pawn*>(pawn)->enableEnPassant();
+    }
+}
+
+void Board::disableEnPassant(MoveInfo& moveInfo){
+    for (int j = 0; j < MAX_WIDTH; j++){
+        Piece* fourthRank = getPiece({4, j});
+        Piece* fifthRank = getPiece({5, j});
+
+        // disables en passants from last turn and saves updated pawns into 
+        if (fourthRank && fourthRank->getType() == PieceType::Pawn){
+            dynamic_cast<Pawn*>(fourthRank)->disableEnPassant();
+            moveInfo.enPassantUpdates.push_back({4,j});
+        }
+        if (fifthRank && fifthRank->getType() == PieceType::Pawn){
+            dynamic_cast<Pawn*>(fifthRank)->disableEnPassant();
+            moveInfo.enPassantUpdates.push_back({5,j});
+        }
+    }
 }

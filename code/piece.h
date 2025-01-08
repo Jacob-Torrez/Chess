@@ -3,7 +3,7 @@
 #include <vector>
 #include "position.h"
 
-enum class PieceType { Pawn, Knight, Bishop, Rook, King, Queen };
+enum class PieceType : char { Pawn = 'P', Knight = 'N', Bishop = 'B', Rook = 'R', King = 'K', Queen = 'Q' };
 enum Color { Black, White };
 constexpr int MAX_WIDTH = 8;
 constexpr int MAX_HEIGHT = 8;
@@ -31,7 +31,7 @@ private:
 
 class King final : public Piece {
 public:
-    King(bool c) : Piece(c) {}
+    King(bool c) : Piece(c), castle(true) {}
     King(const King& other) : Piece(other.getColor()), castle(other.castle) {}
     Piece* clone() const override {return new King(*this);}
 
@@ -42,7 +42,7 @@ public:
     std::vector<Position> getPossibleMoves(const Position& i) const override;
 
 private:
-    bool castle = 1;
+    bool castle;
 };
 
 class Queen final : public Piece {
@@ -67,7 +67,7 @@ public:
 
 class Rook final : public Piece {
 public:
-    Rook(bool c) : Piece(c) {}
+    Rook(bool c) : Piece(c), castle(true) {}
     Rook(const Rook& other) : Piece(other.getColor()), castle(other.castle) {}
     Piece* clone() const override {return new Rook(*this);}
 
@@ -78,12 +78,12 @@ public:
     std::vector<Position> getPossibleMoves(const Position& i) const override;
 
 private:
-    bool castle = 1;
+    bool castle;
 };
 
 class Pawn final : public Piece {
 public:
-    Pawn(bool c) : Piece(c) {}
+    Pawn(bool c) : Piece(c), isFirstMove(true), enPassant(false) {}
     Pawn(const Pawn& other) : Piece(other.getColor()), isFirstMove(other.isFirstMove), enPassant(other.enPassant) {}
     Piece* clone() const override {return new Pawn(*this);}
 
@@ -97,8 +97,8 @@ public:
     std::vector<Position> getPossibleMoves(const Position& i) const override;
 
 private:
-    bool isFirstMove = 1;
-    bool enPassant = 0; 
+    bool isFirstMove;
+    bool enPassant;
 };
 
 class Knight final : public Piece {

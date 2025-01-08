@@ -87,33 +87,7 @@ std::vector<Position> Queen::getPossibleMoves(const Position& i) const {
 }
 
 char to_char(const PieceType& piece){ // function to convert PieceType enum to char for printBoard()
-    switch (piece){
-        case PieceType::Bishop:
-        return 'B';
-        break;
-
-        case PieceType::Rook:
-        return 'R';
-        break;
-
-        case PieceType::Queen:
-        return 'Q';
-        break;
-
-        case PieceType::King:
-        return 'K';
-        break;
-
-        case PieceType::Knight:
-        return 'N';
-        break;
-
-        case PieceType::Pawn:
-        return 'P';
-        break;
-    }
-
-    return 0;
+    return static_cast<char>(piece);
 }
 
 bool isWithinBounds(const Position& p){

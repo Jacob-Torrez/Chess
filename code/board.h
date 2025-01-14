@@ -34,12 +34,12 @@ public:
 
     std::vector<std::pair<Position, Position>> getLegalMoves(const bool& turn) const;
 
-    Piece* getPiece(const Position& p) const {return board[p.row][p.col];}
+    Piece* readPiece(const Position& p) const {return board[p.row][p.col];}
+    Piece*& getPiece(const Position& p) {return board[p.row][p.col];}
 
 private:
     void disableEnPassant(MoveInfo& moveInfo);
     void revertEnPassant(const MoveInfo& moveInfo);
-    Piece*& getPiece(const Position& p) {return board[p.row][p.col];}
     bool isKingInCheck(const Position& king) const;
     void updateSpecialRules(const Position& i, const Position& f, MoveInfo& moveInfo);
     bool checkMovePath(const Position& i, const Position& f) const;
@@ -53,5 +53,5 @@ private:
     Position blackKing;
 
     Piece* board[8][8];
-
+    
 };

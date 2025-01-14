@@ -24,6 +24,7 @@ private:
     int minimax(Board& board, Node* node, int depth, int alpha, int beta, bool turn);
     int evaluateGameState(const Board& board, bool turn) const;
 
+    static const int positionalTable[MAX_HEIGHT][MAX_WIDTH];
     Node* root;
 
 };

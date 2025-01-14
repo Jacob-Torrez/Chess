@@ -4,8 +4,8 @@
 Engine::~Engine(){
     if (root) {
         deleteTree(root);
-    }
-    root = nullptr;
+        root = nullptr;
+    }  
 }
 
 void Engine::deleteTree(Node* node) {
@@ -22,6 +22,7 @@ int Engine::minimax(Board& board, Node* node, int depth, int alpha, int beta, bo
         return node->value;
     }
     std::vector<std::pair<Position, Position>> legalMoves = board.getLegalMoves(turn);
+
     if (turn){
         int maxEval = INT_MIN;
         for (int i = 0; i < legalMoves.size(); i++){
@@ -30,12 +31,12 @@ int Engine::minimax(Board& board, Node* node, int depth, int alpha, int beta, bo
             // generate child node
             MoveInfo moveInfo = board.movePiece(move.first, move.second, turn);
             Node* tempNode = new Node(move);
-            node->children.push_back(tempNode);
     
             // evaluate with minimax and alpha-beta
             int eval = minimax(board, tempNode, depth - 1, alpha, beta, !turn);
-
             board.undoMove(moveInfo);
+
+            node->children.push_back(tempNode);
 
             maxEval = std::max(maxEval, eval);
             alpha = std::max(alpha, eval);
@@ -51,12 +52,12 @@ int Engine::minimax(Board& board, Node* node, int depth, int alpha, int beta, bo
             // generate child node
             MoveInfo moveInfo = board.movePiece(move.first, move.second, turn);
             Node* tempNode = new Node(move);
-            node->children.push_back(tempNode);
     
             // evaluate with minimax and alpha-beta
             int eval = minimax(board, tempNode, depth - 1, alpha, beta, !turn);
-
             board.undoMove(moveInfo);
+
+            node->children.push_back(tempNode);
 
             minEval = std::min(minEval, eval);
             beta = std::min(beta, eval);
@@ -69,7 +70,7 @@ int Engine::minimax(Board& board, Node* node, int depth, int alpha, int beta, bo
 
 int Engine::evaluateGameState(const Board& board, bool turn) const {
     if (board.isCheckmate(turn)){
-        return INT_MIN;
+        return (turn) ? INT_MIN : INT_MAX;
     }
     if (board.isDraw(turn)){
         return 0;
@@ -78,9 +79,11 @@ int Engine::evaluateGameState(const Board& board, bool turn) const {
     int score = 0;
     for (int i = 0; i < MAX_HEIGHT; i++) {
         for (int j = 0; j < MAX_WIDTH; j++) {
-            Piece* piece = board.getPiece({i, j});
+            Piece* piece = board.readPiece({i, j});
             if (piece) {
                 int value = 0;
+                int positionalValue = positionalTable[i][j];
+
                 switch (piece->getType()) {
                     case PieceType::Pawn:   value = 1; break;
                     case PieceType::Bishop: value = 3; break;
@@ -89,7 +92,7 @@ int Engine::evaluateGameState(const Board& board, bool turn) const {
                     case PieceType::Queen:  value = 9; break;
                     default: break;
                 }
-                score += (piece->getColor() ? value : -value);
+                score += (piece->getColor() ? value + positionalValue : -(value + positionalValue));
             }
         }
     }
@@ -98,10 +101,15 @@ int Engine::evaluateGameState(const Board& board, bool turn) const {
 }
 
 std::pair<Position, Position> Engine::getBestMove(Board& board, int depth, bool turn){
-    std::pair<Position, Position> bestMove;
+    if (root != nullptr){
+        deleteTree(root);
+    }
+
+    root = new Node({{-1, -1}, {-1, -1}});
 
     minimax(board, root, PLIES, INT_MIN, INT_MAX, turn);
 
+    std::pair<Position, Position> bestMove;
     for (const auto& child : root->children){
         if (root->value == child->value){
             bestMove = child->move;
@@ -113,3 +121,14 @@ std::pair<Position, Position> Engine::getBestMove(Board& board, int depth, bool 
 
     return bestMove;
 }
+
+const int Engine::positionalTable[MAX_HEIGHT][MAX_WIDTH] = {
+    {0, 0, 0, 0, 0, 0, 0, 0},
+    {0, 1, 1, 1, 1, 1, 1, 0},
+    {0, 1, 2, 2, 2, 2, 1, 0},
+    {0, 1, 2, 3, 3, 2, 1, 0},
+    {0, 1, 2, 3, 3, 2, 1, 0},
+    {0, 1, 2, 2, 2, 2, 1, 0},
+    {0, 1, 1, 1, 1, 1, 1, 0},
+    {0, 0, 0, 0, 0, 0, 0, 0}
+};

@@ -1,9 +1,0 @@
-TODO:
-Implement minimax algorithm
-
-review existing code:
-optimize redundancies
-clean up messy code
-ensure proper encapsulation ***
-clean up input
-rename functions to be easier to follow
